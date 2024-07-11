@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
-	import { Event } from '$lib/clients/annex/events/v1/event_pb';
-	import { StreamTestExecutionEventsResponse } from '$lib/clients/annex/events/v1/event_service_pb';
+	import { Event } from '@annexsh/annex-proto';
+	import { StreamTestExecutionEventsResponse } from '@annexsh/annex-proto';
 
 	const params = $page.params;
 	const context = params.context;
@@ -15,8 +15,8 @@
 			const eventsURL = `${$page.url}?context=${context}&testExecutionId=${testExecutionId}`;
 			const response = await fetch(eventsURL);
 			if (!response || !response.body) {
-				console.error("stream response empty")
-				return
+				console.error('stream response empty');
+				return;
 			}
 
 			const reader = response.body.getReader();
@@ -33,12 +33,12 @@
 				while (boundary !== -1) {
 					const chunk = buffer.slice(0, boundary).trim();
 					if (chunk) {
-							const message = new StreamTestExecutionEventsResponse().fromJson(JSON.parse(chunk));
-							if (!message.event) {
-								console.error("stream event is empty")
-								return
-							}
-							events = [...events, message.event];
+						const message = new StreamTestExecutionEventsResponse().fromJson(JSON.parse(chunk));
+						if (!message.event) {
+							console.error('stream event is empty');
+							return;
+						}
+						events = [...events, message.event];
 					}
 					buffer = buffer.slice(boundary + 1);
 					boundary = buffer.indexOf('\n');
@@ -46,11 +46,11 @@
 			}
 
 			if (buffer.trim()) {
-					const message = JSON.parse(buffer.trim());
-					events = [...events, message.event];
+				const message = JSON.parse(buffer.trim());
+				events = [...events, message.event];
 			}
 		} catch (e) {
-			console.error('Failed to stream: '+ e)
+			console.error('Failed to stream: ' + e);
 		}
 	}
 

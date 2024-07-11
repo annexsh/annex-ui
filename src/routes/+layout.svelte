@@ -1,11 +1,9 @@
 <script>
 	import { setContext } from 'svelte';
-	import { createConnectTransport } from "@connectrpc/connect-web";
+	import { newConnectTransport } from '$lib/clients';
 
 	// Connect transport to be used throughout the app
-	const transport = createConnectTransport({
-		baseUrl: "http://localhost:50051",
-	});
+	const transport = newConnectTransport();
 
 	setContext('transport', transport);
 </script>

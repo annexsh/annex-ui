@@ -1,4 +1,4 @@
-import { newTestClient } from '$lib/services/annex';
+import { newTestClient } from '$lib/clients';
 import { toPlainMessage } from '@bufbuild/protobuf';
 import type { PageServerLoad } from './$types';
 

@@ -33,6 +33,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@annexsh/annex-proto": "^0.1.2",
 		"@connectrpc/connect": "^1.4.0",
 		"@connectrpc/connect-web": "^1.4.0"
 	}

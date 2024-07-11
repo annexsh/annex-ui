@@ -3,7 +3,6 @@
 .DS_Store
 /.svelte-kit
 
-
 # exclude local env files
 .env.local
 .env.*.local

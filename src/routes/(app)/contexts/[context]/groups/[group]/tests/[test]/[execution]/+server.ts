@@ -1,4 +1,4 @@
-import { newEventClient } from '$lib/services/annex';
+import { newEventClient } from '$lib/clients';
 
 
 export async function GET({ url, fetch }) {
@@ -24,7 +24,7 @@ export async function GET({ url, fetch }) {
 				if (abortController.signal.aborted) {
 					console.log('Stream aborted');
 				} else {
-					console.error('Stream error:', e);
+					console.error('Stream error: ', e);
 				}
 			} finally {
 				controller.close();
