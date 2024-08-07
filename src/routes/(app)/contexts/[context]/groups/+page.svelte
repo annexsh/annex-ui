@@ -1,17 +1,27 @@
 <script lang="ts">
-	import { groupRoute } from '$lib/routes';
+	import GroupCard from '$lib/components/GroupCard.svelte';
+	import { Group } from '@annexsh/annex-proto/gen/annex/tests/v1/test_pb.js';
+	import { Breadcrumb, BreadcrumbItem } from 'flowbite-svelte';
+	import { page } from '$app/stores';
 
 	export let data;
+
+	const groups = data.groups;
+
 </script>
 
-<h1>Groups</h1>
+<main class="p-4 bg-gray-50 dark:bg-gray-900">
+	<Breadcrumb class="mb-5">
+		<BreadcrumbItem href="/" home>Home</BreadcrumbItem>
+		<BreadcrumbItem href={$page.url.pathname}>Test Suites</BreadcrumbItem>
+	</Breadcrumb>
 
-{#if data.groups}
-	<ul>
-		{#each data.groups as group}
-			<li><a href={groupRoute(group.context, group.name)}>{group.name}</a></li>
-		{/each}
-	</ul>
-{:else}
-	<p> No groups found for this context. Please create one by spawning a test runner.</p>
-{/if}
+	<div class="mt-px space-y-4">
+		<div class="grid grid-cols-1 gap-4 xl:grid-cols-3">
+			{#each groups as group}
+				<GroupCard group={new Group(group)} />
+			{/each}
+		</div>
+	</div>
+</main>
+

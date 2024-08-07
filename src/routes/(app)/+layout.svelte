@@ -1,19 +1,11 @@
 <script lang="ts">
-	import { contextRoute } from '$lib/routes';
+	import { contexts } from '$lib/stores/contexts';
 
 	export let data;
+
+	contexts.set(data.contexts);
 </script>
 
-<nav>
-	{#if data.contexts.length}
-		Contexts:
-		<ul>
-			{#each data.contexts as context}
-				<li><a href={contextRoute(context)}>{context}</a></li>
-			{/each}
-		</ul>
-	{/if}
-</nav>
+<!-- TODO: groups sidebar-->
 
-<slot></slot>
-
+<slot />

@@ -2,17 +2,12 @@
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import { groupRoute, groupsRoute } from '$lib/routes';
-
-	export let data;
+	import { groupsRoute } from '$lib/routes';
+	import { activeContext } from '$lib/stores/contexts';
 
 	onMount(() => {
 		const context = $page.params.context;
-		const groups = data.groups;
-		if (groups.length) {
-			goto(groupRoute(context, groups[0].name));
-		} else {
-			goto(groupsRoute(context))
-		}
+		activeContext.set(context);
+		goto(groupsRoute(context));
 	});
 </script>

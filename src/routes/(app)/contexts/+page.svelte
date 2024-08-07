@@ -1,17 +1,8 @@
 <script lang="ts">
-	import { contextRoute } from '$lib/routes';
-
-	export let data;
+	import { P } from 'flowbite-svelte';
 </script>
 
-<h1>Contexts</h1>
+<main class="p-4 bg-gray-50 dark:bg-gray-900">
+	<P class="mb-3" weight="light" color="text-gray-500 dark:text-gray-400">To-do</P>
+</main>
 
-{#if data.contexts}
-<ul>
-	{#each data.contexts as context}
-		<li><a href={contextRoute(context)}>{context}</a></li>
-	{/each}
-</ul>
-{:else}
-	<p> No contexts found, please create one.</p>
-{/if}
