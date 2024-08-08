@@ -3,7 +3,7 @@ import type { PageServerLoad } from './$types';
 import { toPlainMessage } from '@bufbuild/protobuf';
 import type {
 	ExecuteTestResponse,
-	GetTestDefaultInputResponse,
+	GetTestResponse,
 	ListTestExecutionsResponse
 } from '@annexsh/annex-proto/gen/annex/tests/v1/test_service_pb';
 import { Payload } from '@annexsh/annex-proto/gen/annex/tests/v1/test_pb';
@@ -11,10 +11,20 @@ import { Payload } from '@annexsh/annex-proto/gen/annex/tests/v1/test_pb';
 export const load: PageServerLoad = async ({ params, fetch }) => {
 	const testClient = newTestClient(fetch);
 
-	const inputRes = await testClient.getTestDefaultInput({
+	const testRes = await testClient.getTest({
 		context: params.context,
 		testId: params.test
 	});
+
+	let defaultInput = '';
+
+	if (testRes.test.hasInput) {
+		const inputRes = await testClient.getTestDefaultInput({
+			context: params.context,
+			testId: params.test
+		});
+		defaultInput = inputRes.defaultInput;
+	}
 
 	const testExecsRes = await testClient.listTestExecutions({
 		context: params.context,
@@ -22,7 +32,8 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 	});
 
 	return {
-		defaultInput: toPlainMessage<GetTestDefaultInputResponse>(inputRes).defaultInput,
+		test: toPlainMessage<GetTestResponse>(testRes).test,
+		defaultInput: defaultInput,
 		testExecutions: toPlainMessage<ListTestExecutionsResponse>(testExecsRes).testExecutions
 	};
 };

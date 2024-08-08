@@ -8,11 +8,14 @@
 	import { groupRoute, groupsRoute, testRoute } from '$lib/routes';
 	import CodeEditor from '$lib/components/CodeEditor.svelte';
 	import { CheckCircleSolid, ClockSolid, CloseCircleSolid } from 'flowbite-svelte-icons';
+	import type { Test } from '@annexsh/annex-proto/gen/annex/tests/v1/test_pb.js';
+
+	export let data;
 
 	const params = $page.params;
 	const group = params.group;
 	const context = params.context;
-	const test = params.test;
+	const test = data.test as Test;
 	const testExecutionId = params.execution;
 
 	let events: Event[] = [];
@@ -131,7 +134,7 @@
 		<BreadcrumbItem href="/" home>Home</BreadcrumbItem>
 		<BreadcrumbItem href={groupsRoute(context)}>Test Suites</BreadcrumbItem>
 		<BreadcrumbItem href={groupRoute(context, group)}>{group}</BreadcrumbItem>
-		<BreadcrumbItem href={testRoute(context, group, test)}>{test}</BreadcrumbItem>
+		<BreadcrumbItem href={testRoute(context, group, test.id)}>{test.name}</BreadcrumbItem>
 		<BreadcrumbItem href={$page.url.pathname}>{testExecutionId}</BreadcrumbItem>
 	</Breadcrumb>
 
