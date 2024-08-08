@@ -2,7 +2,18 @@
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import { Event, Event_Type, StreamTestExecutionEventsResponse } from '@annexsh/annex-proto';
-	import { Accordion, AccordionItem, Breadcrumb, BreadcrumbItem, Button, Spinner } from 'flowbite-svelte';
+	import {
+		Accordion,
+		AccordionItem,
+		Breadcrumb,
+		BreadcrumbItem,
+		Button,
+		Card,
+		Heading,
+		Input,
+		Spinner,
+		Toolbar
+	} from 'flowbite-svelte';
 	import { type CaseExecutionView, ExecutionStatus, getExecutionStatus } from '$lib/models/execution';
 	import type { CaseExecution } from '@annexsh/annex-proto/gen/annex/tests/v1/test_pb';
 	import { groupRoute, groupsRoute, testRoute } from '$lib/routes';
@@ -138,19 +149,33 @@
 		<BreadcrumbItem href={$page.url.pathname}>{testExecutionId}</BreadcrumbItem>
 	</Breadcrumb>
 
+	<div>
+		<Heading tag="h1" class="text-4xl font-extrabold text-gray-900 dark:text-white pl-1 pb-3">
+			{test.name}
+		</Heading>
+		<h3 class="text-base font-normal text-gray-500 dark:text-gray-400 pl-1 pb-5">{testExecutionId}</h3>
 
-	<div class="float-right mb-5">
-		<Button class="mr-2" size="sm" on:click={open_all}>Open all</Button>
-		<Button size="sm" on:click={close_all}>Close all</Button>
-	</div>
+		<Card size="xl" class="shadow-sm max-w-none max-h-[75vh] dark">
+			<Heading tag="h2" class="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl w-full pb-2">
+				Cases
+			</Heading>
 
-	<Accordion multiple>
-		{#each cases.keys() as caseID, i}
-			{@const caseView=cases.get(caseID)}
-			{#if caseView}
-				{@const execution=caseView.execution}
-				{@const status=getExecutionStatus(caseView.execution)}
-				<AccordionItem bind:open={items[i]} transitionParams="{{duration:30}}">
+			<Toolbar embedded class="w-full py-4 text-gray-500  dark:text-gray-400">
+				<Input placeholder="Search for case" class="me-4 w-80 border xl:w-96" />
+
+				<div slot="end" class="flex items-center space-x-2">
+					<Button class="mr-2" size="sm" on:click={open_all}>Open all</Button>
+					<Button size="sm" on:click={close_all}>Close all</Button>
+				</div>
+			</Toolbar>
+
+			<Accordion multiple>
+				{#each cases.keys() as caseID, i}
+					{@const caseView=cases.get(caseID)}
+					{#if caseView}
+						{@const execution=caseView.execution}
+						{@const status=getExecutionStatus(caseView.execution)}
+						<AccordionItem bind:open={items[i]} transitionParams="{{duration:30}}">
 					<span slot="header" class="text-base flex gap-2">
 						{#if status === ExecutionStatus.Scheduled}
 							<ClockSolid class="text-gray-600 dark:text-gray-400 inline m-1" ariaLabel="success" />
@@ -163,9 +188,11 @@
 						{/if}
 						<span>{execution.caseName}</span>
 					</span>
-					<CodeEditor value={caseLogsString(caseView)} readonly={true} editable={false} />
-				</AccordionItem>
-			{/if}
-		{/each}
-	</Accordion>
+							<CodeEditor value={caseLogsString(caseView)} readonly={true} editable={false} />
+						</AccordionItem>
+					{/if}
+				{/each}
+			</Accordion>
+		</Card>
+	</div>
 </main>
