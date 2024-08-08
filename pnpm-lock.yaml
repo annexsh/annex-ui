@@ -6,8 +6,8 @@ settings:
 
 dependencies:
   '@annexsh/annex-proto':
-    specifier: ^0.1.5
-    version: 0.1.5
+    specifier: ^0.1.6
+    version: 0.1.6
   '@bufbuild/protobuf':
     specifier: ^1.10.0
     version: 1.10.0
@@ -154,8 +154,8 @@ packages:
       '@jridgewell/gen-mapping': 0.3.5
       '@jridgewell/trace-mapping': 0.3.25
 
-  /@annexsh/annex-proto@0.1.5:
-    resolution: {integrity: sha512-hJltyfA52HYE0Y5WuVIqHzE6opIzDP+82J2zR/Pq/iCHsaI2G16SfkbnMulbT40F25A3X+TriJCqa68e8zMNow==}
+  /@annexsh/annex-proto@0.1.6:
+    resolution: {integrity: sha512-cLeIh8WvRGAH1h86VS33f/NXZM/W5vwoDUS6M2vCWyfbLjaNIeljRImjCub1myXdUrm+eEi1RhXn/iUs40lzuQ==}
     dev: false
 
   /@bufbuild/protobuf@1.10.0:

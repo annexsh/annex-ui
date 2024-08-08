@@ -15,6 +15,7 @@
 	const group = params.group;
 	const test = data.test as Test;
 	const executions = data.testExecutions as TestExecution[];
+
 	let open = false;
 </script>
 
