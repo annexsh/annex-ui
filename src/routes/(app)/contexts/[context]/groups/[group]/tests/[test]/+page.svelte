@@ -2,7 +2,7 @@
 	import { page } from '$app/stores';
 	import { groupRoute, groupsRoute } from '$lib/routes';
 	import { TestExecution } from '@annexsh/annex-proto/gen/annex/tests/v1/test_pb';
-	import { Breadcrumb, BreadcrumbItem, Button, Heading, Input, Toolbar } from 'flowbite-svelte';
+	import { Breadcrumb, BreadcrumbItem, Button, Card, Heading, Input, Toolbar } from 'flowbite-svelte';
 	import ExecutionsTable from '$lib/components/ExecutionsTable.svelte';
 	import NewExecutionModal from '$lib/components/NewExecutionModal.svelte';
 	import { PlusOutline } from 'flowbite-svelte-icons';
@@ -27,23 +27,29 @@
 		<BreadcrumbItem href={$page.url.pathname}>{test.name}</BreadcrumbItem>
 	</Breadcrumb>
 
-	<Heading tag="h1" class="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl w-full pb-6">
-		Executions
-	</Heading>
+	<div class="ml-5 mr-5 dark">
+		<Heading tag="h1" class="text-4xl font-extrabold text-gray-900 dark:text-white pl-1 pb-6">
+			{test.name}
+		</Heading>
 
-	<Toolbar embedded class="w-full py-4 text-gray-500  dark:text-gray-400">
-		<Input placeholder="Search for execution" class="me-4 w-80 border xl:w-96" />
+		<Card size="xl" class="shadow-sm max-w-none max-h-[75vh] dark">
+			<Heading tag="h2" class="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl w-full pb-2">
+				Executions
+			</Heading>
 
-		<div slot="end" class="flex items-center space-x-2">
-			<Button on:click={() => {open = true}} size="md" class="gap-2 whitespace-nowrap px-3">
-				<PlusOutline size="md" />
-				New Execution
-			</Button>
-		</div>
-	</Toolbar>
+			<Toolbar embedded class="w-full py-4 text-gray-500  dark:text-gray-400">
+				<Input placeholder="Search for execution" class="me-4 w-80 border xl:w-96" />
 
-	<div class="mt-px space-y-4">
-		<ExecutionsTable context={context} group={group} executions="{executions}" />
+				<div slot="end" class="flex items-center space-x-2">
+					<Button on:click={() => {open = true}} size="md" class="gap-2 whitespace-nowrap px-3">
+						<PlusOutline size="md" />
+						New Execution
+					</Button>
+				</div>
+			</Toolbar>
+
+			<ExecutionsTable context={context} group={group} executions="{executions}" />
+		</Card>
 	</div>
 </main>
 
