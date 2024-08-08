@@ -34,7 +34,7 @@
 		</NavBrand>
 		<div class="hidden lg:block lg:ps-3">
 			{#if $contexts}
-				<NavUl class="ml-2" activeUrl="/" activeClass="text-primary-600 dark:text-primary-500">
+				<NavUl class="-ml-20" activeUrl="/" activeClass="text-primary-600 dark:text-primary-500">
 					<Button size="sm"> {$activeContext ? $activeContext : 'Select context'}
 						<ChevronDownOutline />
 					</Button>

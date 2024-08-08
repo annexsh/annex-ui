@@ -6,6 +6,4 @@
 	contexts.set(data.contexts);
 </script>
 
-<!-- TODO: groups sidebar-->
-
 <slot />

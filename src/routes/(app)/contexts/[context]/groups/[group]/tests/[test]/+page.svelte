@@ -27,7 +27,7 @@
 		<BreadcrumbItem href={$page.url.pathname}>{test.name}</BreadcrumbItem>
 	</Breadcrumb>
 
-	<div class="ml-5 mr-5 dark">
+	<div>
 		<Heading tag="h1" class="text-4xl font-extrabold text-gray-900 dark:text-white pl-1 pb-6">
 			{test.name}
 		</Heading>
