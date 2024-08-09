@@ -15,3 +15,17 @@ export const load: PageServerLoad = async ({ params, fetch }) => {
 		test: toPlainMessage<GetTestResponse>(testRes).test
 	};
 };
+
+export const actions = {
+	default: async (event) => {
+		const params = event.params;
+
+		const testClient = newTestClient(fetch);
+
+		// TODO: handle error
+		await testClient.retryTestExecution({
+			context: params.context,
+			testExecutionId: params.execution
+		});
+	}
+};

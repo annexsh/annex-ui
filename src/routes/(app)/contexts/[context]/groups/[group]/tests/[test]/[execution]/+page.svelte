@@ -18,14 +18,20 @@
 		Spinner,
 		Toolbar
 	} from 'flowbite-svelte';
-	import { type CaseExecutionView, ExecutionStatus, getExecutionStatus } from '$lib/models/execution';
+	import {
+		type CaseExecutionView,
+		ExecutionStatus,
+		getExecutionStatus,
+		type RestartOption,
+		RestartType
+	} from '$lib/models/execution';
 	import type { CaseExecution } from '@annexsh/annex-proto/gen/annex/tests/v1/test_pb';
 	import { groupRoute, groupsRoute, testRoute } from '$lib/routes';
 	import CodeEditor from '$lib/components/CodeEditor.svelte';
 	import { CheckCircleSolid, ChevronDownOutline, ClockSolid, CloseCircleSolid } from 'flowbite-svelte-icons';
 	import type { Test } from '@annexsh/annex-proto/gen/annex/tests/v1/test_pb.js';
-	import type { Pair } from '$lib/models/base';
 	import ExecutionStatusBadge from '$lib/components/ExecutionStatusBadge.svelte';
+	import RestartExecutionModal from '$lib/components/RestartExecutionModal.svelte';
 
 	export let data;
 
@@ -38,18 +44,27 @@
 	let overallStatus: ExecutionStatus;
 	let events: Event[] = [];
 	let cases = new Map<number, CaseExecutionView>();
+	let open = false;
+	let restartOption: RestartOption;
 
 	const items = Array(cases.size);
 	const open_all = () => items.forEach((_, i) => (items[i] = true));
 	const close_all = () => items.forEach((_, i) => (items[i] = false));
 
-	const restartOptions: Pair<string, string>[] = [
-		{ key: 'As new', value: 'Execute without prior history' }
-		// {key: 'Specific case', value: 'Replay from a specific case'}, TODO: add support
+	const restartOptions: RestartOption[] = [
+		{
+			type: RestartType.AsNew,
+			title: 'As new',
+			helper: 'Execute without prior history'
+		}
 	];
 
-	$:if (overallStatus == ExecutionStatus.Error) {
-		restartOptions.push({ key: 'From failure', value: 'Retry from first recorded failure' });
+	$:if (overallStatus == ExecutionStatus.Failed) {
+		restartOptions.push({
+			type: RestartType.FromFailure,
+			title: 'From failure',
+			helper: 'Retry from first recorded failure'
+		});
 	}
 
 	onMount(subscribe);
@@ -116,7 +131,7 @@
 			case Event_Type.TEST_EXECUTION_FINISHED:
 				if (eventData.case == 'testExecution') {
 					if (eventData.value.error) {
-						overallStatus = ExecutionStatus.Error;
+						overallStatus = ExecutionStatus.Failed;
 					} else {
 						overallStatus = ExecutionStatus.Success;
 					}
@@ -188,10 +203,13 @@
 				<ChevronDownOutline class="w-6 h-6 ms-2 text-white dark:text-white" />
 			</Button>
 			<Dropdown class="w-60 p-3 space-y-1 text-sm">
-				{#each restartOptions as pair }
-					<DropdownItem class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600">
-						{pair.key}
-						<Helper>{pair.value}</Helper>
+				{#each restartOptions as option }
+					<DropdownItem class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600" on:click={() => {
+						open = true
+						restartOption = option
+					}}>
+						{option.title}
+						<Helper>{option.helper}</Helper>
 					</DropdownItem>
 				{/each}
 			</Dropdown>
@@ -229,7 +247,7 @@
 							<Spinner class="m-1.5" color="gray" size={4} />
 						{:else if status === ExecutionStatus.Success}
 							<CheckCircleSolid class="text-green-600 dark:text-green-400 inline m-1" ariaLabel="success" />
-						{:else if status === ExecutionStatus.Error}
+						{:else if status === ExecutionStatus.Failed}
 							<CloseCircleSolid class="text-red-600 dark:text-red-400 inline m-1" ariaLabel="error" />
 						{/if}
 						<span>{execution.caseName}</span>
@@ -242,3 +260,6 @@
 		</Card>
 	</div>
 </main>
+
+<!-- Modals -->
+<RestartExecutionModal bind:open bind:restartOption />

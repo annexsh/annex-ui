@@ -23,7 +23,6 @@
 
 <form method="POST">
 	<Modal bind:open title="New Execution" size="lg" class="m-4" autoclose={false} outsideclose>
-		<!-- Modal body -->
 		<div class="space-y-6 p-0">
 			<div class="grid grid-cols-6 gap-6">
 				<div class="col-span-6 space-y-2">

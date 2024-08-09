@@ -17,7 +17,7 @@ if statements to trigger the reactivity.
 	<Badge large color={executionStatusColors[status]} class="mb-2">{status}</Badge>
 {:else if status === ExecutionStatus.Success}
 	<Badge large color={executionStatusColors[status]} class="mb-2">{status}</Badge>
-{:else if status === ExecutionStatus.Error}
+{:else if status === ExecutionStatus.Failed}
 	<Badge large color={executionStatusColors[status]} class="mb-2">{status}</Badge>
 {:else}
 	<Badge large color={executionStatusColors[ExecutionStatus.Unknown]} class="mb-2">{ExecutionStatus.Unknown}</Badge>
