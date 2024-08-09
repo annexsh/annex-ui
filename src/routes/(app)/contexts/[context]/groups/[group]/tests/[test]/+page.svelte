@@ -28,9 +28,9 @@
 	</Breadcrumb>
 
 	<div>
-		<Heading tag="h1" class="text-4xl font-extrabold text-gray-900 dark:text-white pl-1 pb-6">
-			{test.name}
-		</Heading>
+		<div class="mb-6 items-center">
+			<span class="text-3xl font-bold leading-none text-gray-900 dark:text-white sm:text-4xl">{test.name}</span>
+		</div>
 
 		<Card size="xl" class="shadow-sm max-w-none max-h-[75vh] dark">
 			<Heading tag="h2" class="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl w-full pb-2">

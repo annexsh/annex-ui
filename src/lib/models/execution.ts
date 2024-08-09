@@ -1,4 +1,10 @@
 import { CaseExecution, Log, TestExecution } from '@annexsh/annex-proto/gen/annex/tests/v1/test_pb';
+import type { ColorVariant } from 'flowbite-svelte';
+
+export type CaseExecutionView = {
+	execution: CaseExecution
+	logs: Log[]
+}
 
 export enum ExecutionStatus {
 	Unknown = 'Unknown',
@@ -8,10 +14,13 @@ export enum ExecutionStatus {
 	Scheduled = 'Scheduled',
 }
 
-export type CaseExecutionView = {
-	execution: CaseExecution
-	logs: Log[]
-}
+export const executionStatusColors: { [key in ExecutionStatus]: ColorVariant } = {
+	[ExecutionStatus.Unknown]: 'dark',
+	[ExecutionStatus.Success]: 'green',
+	[ExecutionStatus.Error]: 'red',
+	[ExecutionStatus.Running]: 'blue',
+	[ExecutionStatus.Scheduled]: 'yellow'
+};
 
 export function getExecutionStatus(execution: TestExecution | CaseExecution): ExecutionStatus {
 	if (execution.finishTime) {

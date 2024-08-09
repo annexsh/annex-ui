@@ -8,8 +8,12 @@
 		Breadcrumb,
 		BreadcrumbItem,
 		Button,
+		ButtonGroup,
 		Card,
+		Dropdown,
+		DropdownItem,
 		Heading,
+		Helper,
 		Input,
 		Spinner,
 		Toolbar
@@ -18,8 +22,10 @@
 	import type { CaseExecution } from '@annexsh/annex-proto/gen/annex/tests/v1/test_pb';
 	import { groupRoute, groupsRoute, testRoute } from '$lib/routes';
 	import CodeEditor from '$lib/components/CodeEditor.svelte';
-	import { CheckCircleSolid, ClockSolid, CloseCircleSolid } from 'flowbite-svelte-icons';
+	import { CheckCircleSolid, ChevronDownOutline, ClockSolid, CloseCircleSolid } from 'flowbite-svelte-icons';
 	import type { Test } from '@annexsh/annex-proto/gen/annex/tests/v1/test_pb.js';
+	import type { Pair } from '$lib/models/base';
+	import ExecutionStatusBadge from '$lib/components/ExecutionStatusBadge.svelte';
 
 	export let data;
 
@@ -29,12 +35,28 @@
 	const test = data.test as Test;
 	const testExecutionId = params.execution;
 
+	let overallStatus: ExecutionStatus;
 	let events: Event[] = [];
 	let cases = new Map<number, CaseExecutionView>();
+
+	const items = Array(cases.size);
+	const open_all = () => items.forEach((_, i) => (items[i] = true));
+	const close_all = () => items.forEach((_, i) => (items[i] = false));
+
+	const restartOptions: Pair<string, string>[] = [
+		{ key: 'As new', value: 'Execute without prior history' }
+		// {key: 'Specific case', value: 'Replay from a specific case'}, TODO: add support
+	];
+
+	$:if (overallStatus == ExecutionStatus.Error) {
+		restartOptions.push({ key: 'From failure', value: 'Retry from first recorded failure' });
+	}
 
 	onMount(subscribe);
 
 	async function subscribe() {
+		overallStatus = ExecutionStatus.Scheduled;
+
 		try {
 			const eventsURL = `${$page.url}?context=${context}&testExecutionId=${testExecutionId}`;
 			const response = await fetch(eventsURL);
@@ -84,11 +106,21 @@
 			return; // unknown event
 		}
 
-		const eventData = event.data?.data;
+		if (overallStatus == ExecutionStatus.Scheduled) {
+			overallStatus = ExecutionStatus.Running;
+		}
 
+		const eventData = event.data?.data;
 
 		switch (event.type) {
 			case Event_Type.TEST_EXECUTION_FINISHED:
+				if (eventData.case == 'testExecution') {
+					if (eventData.value.error) {
+						overallStatus = ExecutionStatus.Error;
+					} else {
+						overallStatus = ExecutionStatus.Success;
+					}
+				}
 				break;
 			case Event_Type.CASE_EXECUTION_SCHEDULED:
 			case Event_Type.CASE_EXECUTION_STARTED:
@@ -134,10 +166,6 @@
 		}
 		return logsStr.replace(/[\r\n]+$/, ''); // trim new line at end of string
 	}
-
-	const items = Array(cases.size);
-	const open_all = () => items.forEach((_, i) => (items[i] = true));
-	const close_all = () => items.forEach((_, i) => (items[i] = false));
 </script>
 
 <main class="p-4 bg-gray-50 dark:bg-gray-900">
@@ -150,10 +178,24 @@
 	</Breadcrumb>
 
 	<div>
-		<Heading tag="h1" class="text-4xl font-extrabold text-gray-900 dark:text-white pl-1 pb-3">
-			{test.name}
-		</Heading>
-		<h3 class="text-base font-normal text-gray-500 dark:text-gray-400 pl-1 pb-5">{testExecutionId}</h3>
+		<ExecutionStatusBadge status={overallStatus} />
+		<div class="mb-6 items-center sm:flex">
+			<div class="mb-4 w-full sm:mb-0">
+				<span class="text-3xl font-bold leading-none text-gray-900 dark:text-white sm:text-4xl">{test.name}</span>
+				<h3 class="text-base font-normal text-gray-500 dark:text-gray-400">{testExecutionId}</h3>
+			</div>
+			<Button size="sm">Restart
+				<ChevronDownOutline class="w-6 h-6 ms-2 text-white dark:text-white" />
+			</Button>
+			<Dropdown class="w-60 p-3 space-y-1 text-sm">
+				{#each restartOptions as pair }
+					<DropdownItem class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600">
+						{pair.key}
+						<Helper>{pair.value}</Helper>
+					</DropdownItem>
+				{/each}
+			</Dropdown>
+		</div>
 
 		<Card size="xl" class="shadow-sm max-w-none max-h-[75vh] dark">
 			<Heading tag="h2" class="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl w-full pb-2">
@@ -164,8 +206,12 @@
 				<Input placeholder="Search for case" class="me-4 w-80 border xl:w-96" />
 
 				<div slot="end" class="flex items-center space-x-2">
-					<Button class="mr-2" size="sm" on:click={open_all}>Open all</Button>
-					<Button size="sm" on:click={close_all}>Close all</Button>
+					<ButtonGroup>
+						<Button outline={false} class="mr-2" size="xs" on:click={open_all}>Open all</Button>
+						<Button size="xs" on:click={close_all}>Close all</Button>
+					</ButtonGroup>
+
+
 				</div>
 			</Toolbar>
 
