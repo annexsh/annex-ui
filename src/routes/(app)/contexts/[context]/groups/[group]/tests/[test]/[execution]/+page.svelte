@@ -65,6 +65,7 @@
 			helper: 'Retry from first recorded failure'
 		});
 	}
+
 	function updateOverallStatus(status: ExecutionStatus) {
 		const isFinished = ExecutionStatus.Success || ExecutionStatus.Failed;
 		overallStatus = isFinished ? overallStatus : status;
@@ -73,7 +74,7 @@
 	onMount(subscribe);
 
 	async function subscribe() {
-		updateOverallStatus(ExecutionStatus.Scheduled)
+		updateOverallStatus(ExecutionStatus.Scheduled);
 
 		try {
 			const eventsURL = `${$page.url}?context=${context}&testExecutionId=${testExecution.id}`;
@@ -124,7 +125,7 @@
 			return; // unknown event
 		}
 
-		updateOverallStatus(ExecutionStatus.Running)
+		updateOverallStatus(ExecutionStatus.Running);
 
 		const eventData = event.data?.data;
 
@@ -234,7 +235,7 @@
 				</div>
 			</Toolbar>
 
-			<Accordion multiple>
+			<Accordion multiple activeClass='focus:ring-2 dark:focus:ring-gray-700'>
 				{#each cases.keys() as caseID, i}
 					{@const caseView=cases.get(caseID)}
 					{#if caseView}
