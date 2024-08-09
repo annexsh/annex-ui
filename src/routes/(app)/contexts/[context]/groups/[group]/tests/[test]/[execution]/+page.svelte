@@ -25,11 +25,10 @@
 		type RestartOption,
 		RestartType
 	} from '$lib/models/execution';
-	import type { CaseExecution } from '@annexsh/annex-proto/gen/annex/tests/v1/test_pb';
+	import type { CaseExecution, Test, TestExecution } from '@annexsh/annex-proto/gen/annex/tests/v1/test_pb';
 	import { groupRoute, groupsRoute, testRoute } from '$lib/routes';
 	import CodeEditor from '$lib/components/CodeEditor.svelte';
 	import { CheckCircleSolid, ChevronDownOutline, ClockSolid, CloseCircleSolid } from 'flowbite-svelte-icons';
-	import type { Test } from '@annexsh/annex-proto/gen/annex/tests/v1/test_pb.js';
 	import ExecutionStatusBadge from '$lib/components/ExecutionStatusBadge.svelte';
 	import RestartExecutionModal from '$lib/components/RestartExecutionModal.svelte';
 
@@ -39,13 +38,13 @@
 	const group = params.group;
 	const context = params.context;
 	const test = data.test as Test;
-	const testExecutionId = params.execution;
+	const testExecution = data.testExecution as TestExecution;
 
-	let overallStatus: ExecutionStatus;
 	let events: Event[] = [];
 	let cases = new Map<number, CaseExecutionView>();
 	let open = false;
 	let restartOption: RestartOption;
+	let overallStatus = getExecutionStatus(testExecution);
 
 	const items = Array(cases.size);
 	const open_all = () => items.forEach((_, i) => (items[i] = true));
@@ -66,14 +65,18 @@
 			helper: 'Retry from first recorded failure'
 		});
 	}
+	function updateOverallStatus(status: ExecutionStatus) {
+		const isFinished = ExecutionStatus.Success || ExecutionStatus.Failed;
+		overallStatus = isFinished ? overallStatus : status;
+	}
 
 	onMount(subscribe);
 
 	async function subscribe() {
-		overallStatus = ExecutionStatus.Scheduled;
+		updateOverallStatus(ExecutionStatus.Scheduled)
 
 		try {
-			const eventsURL = `${$page.url}?context=${context}&testExecutionId=${testExecutionId}`;
+			const eventsURL = `${$page.url}?context=${context}&testExecutionId=${testExecution.id}`;
 			const response = await fetch(eventsURL);
 			if (!response || !response.body) {
 				console.error('stream response empty');
@@ -121,9 +124,7 @@
 			return; // unknown event
 		}
 
-		if (overallStatus == ExecutionStatus.Scheduled) {
-			overallStatus = ExecutionStatus.Running;
-		}
+		updateOverallStatus(ExecutionStatus.Running)
 
 		const eventData = event.data?.data;
 
@@ -189,7 +190,7 @@
 		<BreadcrumbItem href={groupsRoute(context)}>Test Suites</BreadcrumbItem>
 		<BreadcrumbItem href={groupRoute(context, group)}>{group}</BreadcrumbItem>
 		<BreadcrumbItem href={testRoute(context, group, test.id)}>{test.name}</BreadcrumbItem>
-		<BreadcrumbItem href={$page.url.pathname}>{testExecutionId}</BreadcrumbItem>
+		<BreadcrumbItem href={$page.url.pathname}>{testExecution.id}</BreadcrumbItem>
 	</Breadcrumb>
 
 	<div>
@@ -197,7 +198,7 @@
 		<div class="mb-6 items-center sm:flex">
 			<div class="mb-4 w-full sm:mb-0">
 				<span class="text-3xl font-bold leading-none text-gray-900 dark:text-white sm:text-4xl">{test.name}</span>
-				<h3 class="text-base font-normal text-gray-500 dark:text-gray-400">{testExecutionId}</h3>
+				<h3 class="text-base font-normal text-gray-500 dark:text-gray-400 mt-1">{testExecution.id}</h3>
 			</div>
 			<Button size="sm">Restart
 				<ChevronDownOutline class="w-6 h-6 ms-2 text-white dark:text-white" />
