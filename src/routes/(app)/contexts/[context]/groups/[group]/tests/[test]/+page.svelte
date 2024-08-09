@@ -7,6 +7,7 @@
 	import NewExecutionModal from '$lib/components/NewExecutionModal.svelte';
 	import { PlusOutline } from 'flowbite-svelte-icons';
 	import type { Test } from '@annexsh/annex-proto/gen/annex/tests/v1/test_pb.js';
+	import { Svroller } from 'svrollbar';
 
 	export let data;
 
@@ -32,7 +33,7 @@
 			<span class="text-3xl font-bold leading-none text-gray-900 dark:text-white sm:text-4xl">{test.name}</span>
 		</div>
 
-		<Card size="xl" class="shadow-sm max-w-none max-h-[75vh] dark">
+		<Card size="xl" class="shadow-sm max-w-none dark">
 			<Heading tag="h2" class="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl w-full pb-2">
 				Executions
 			</Heading>
@@ -48,7 +49,9 @@
 				</div>
 			</Toolbar>
 
-			<ExecutionsTable context={context} group={group} executions="{executions}" />
+			<Svroller width="100%" height="67vh">
+				<ExecutionsTable context={context} group={group} executions="{executions}" />
+			</Svroller>
 		</Card>
 	</div>
 </main>
