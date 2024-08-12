@@ -2,13 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Hide scrollbar for Chrome, Safari and Opera */
-html::-webkit-scrollbar {
-    display: none;
+::-webkit-scrollbar {
+    background: none;
+    height: 5px;
+    width: 5px;
 }
 
-/* Hide scrollbar for IE, Edge and Firefox */
-html {
-    -ms-overflow-style: none;  /* IE and Edge */
-    scrollbar-width: none;  /* Firefox */
+::-webkit-scrollbar-track {
+    background-color: rgba(204, 204, 204, 0.17);
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: #797b83;
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-corner {
+    background-color: rgba(204, 204, 204, 0.17);
 }
