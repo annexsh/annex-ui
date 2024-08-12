@@ -2,27 +2,82 @@
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import { Event, Event_Type, StreamTestExecutionEventsResponse } from '@annexsh/annex-proto';
-	import { Accordion, AccordionItem, Breadcrumb, BreadcrumbItem, Button, Spinner } from 'flowbite-svelte';
-	import { type CaseExecutionView, ExecutionStatus, getExecutionStatus } from '$lib/models/execution';
-	import type { CaseExecution } from '@annexsh/annex-proto/gen/annex/tests/v1/test_pb';
+	import {
+		Accordion,
+		AccordionItem,
+		Breadcrumb,
+		BreadcrumbItem,
+		Button,
+		ButtonGroup,
+		Card,
+		Dropdown,
+		DropdownItem,
+		Heading,
+		Helper,
+		Input,
+		Spinner,
+		Toolbar
+	} from 'flowbite-svelte';
+	import {
+		type CaseExecutionView,
+		ExecutionStatus,
+		getExecutionStatus,
+		type RestartOption,
+		RestartType
+	} from '$lib/models/execution';
+	import type { CaseExecution, Test, TestExecution } from '@annexsh/annex-proto/gen/annex/tests/v1/test_pb';
 	import { groupRoute, groupsRoute, testRoute } from '$lib/routes';
 	import CodeEditor from '$lib/components/CodeEditor.svelte';
-	import { CheckCircleSolid, ClockSolid, CloseCircleSolid } from 'flowbite-svelte-icons';
+	import { CheckCircleSolid, ChevronDownOutline, ClockSolid, CloseCircleSolid } from 'flowbite-svelte-icons';
+	import ExecutionStatusBadge from '$lib/components/ExecutionStatusBadge.svelte';
+	import RestartExecutionModal from '$lib/components/RestartExecutionModal.svelte';
+
+	export let data;
 
 	const params = $page.params;
 	const group = params.group;
 	const context = params.context;
-	const test = params.test;
-	const testExecutionId = params.execution;
+	const test = data.test as Test;
+	const testExecution = data.testExecution as TestExecution;
 
 	let events: Event[] = [];
 	let cases = new Map<number, CaseExecutionView>();
+	let open = false;
+	let restartOption: RestartOption;
+	let overallStatus = getExecutionStatus(testExecution);
+
+	const items = Array(cases.size);
+	const open_all = () => items.forEach((_, i) => (items[i] = true));
+	const close_all = () => items.forEach((_, i) => (items[i] = false));
+
+	const restartOptions: RestartOption[] = [
+		{
+			type: RestartType.AsNew,
+			title: 'As new',
+			helper: 'Execute without prior history'
+		}
+	];
+
+	$:if (overallStatus == ExecutionStatus.Failed) {
+		restartOptions.push({
+			type: RestartType.FromFailure,
+			title: 'From failure',
+			helper: 'Retry from first recorded failure'
+		});
+	}
+
+	function updateOverallStatus(status: ExecutionStatus) {
+		const isFinished = ExecutionStatus.Success || ExecutionStatus.Failed;
+		overallStatus = isFinished ? overallStatus : status;
+	}
 
 	onMount(subscribe);
 
 	async function subscribe() {
+		updateOverallStatus(ExecutionStatus.Scheduled);
+
 		try {
-			const eventsURL = `${$page.url}?context=${context}&testExecutionId=${testExecutionId}`;
+			const eventsURL = `${$page.url}?context=${context}&testExecutionId=${testExecution.id}`;
 			const response = await fetch(eventsURL);
 			if (!response || !response.body) {
 				console.error('stream response empty');
@@ -70,11 +125,19 @@
 			return; // unknown event
 		}
 
-		const eventData = event.data?.data;
+		updateOverallStatus(ExecutionStatus.Running);
 
+		const eventData = event.data?.data;
 
 		switch (event.type) {
 			case Event_Type.TEST_EXECUTION_FINISHED:
+				if (eventData.case == 'testExecution') {
+					if (eventData.value.error) {
+						overallStatus = ExecutionStatus.Failed;
+					} else {
+						overallStatus = ExecutionStatus.Success;
+					}
+				}
 				break;
 			case Event_Type.CASE_EXECUTION_SCHEDULED:
 			case Event_Type.CASE_EXECUTION_STARTED:
@@ -120,10 +183,6 @@
 		}
 		return logsStr.replace(/[\r\n]+$/, ''); // trim new line at end of string
 	}
-
-	const items = Array(cases.size);
-	const open_all = () => items.forEach((_, i) => (items[i] = true));
-	const close_all = () => items.forEach((_, i) => (items[i] = false));
 </script>
 
 <main class="p-4 bg-gray-50 dark:bg-gray-900">
@@ -131,23 +190,58 @@
 		<BreadcrumbItem href="/" home>Home</BreadcrumbItem>
 		<BreadcrumbItem href={groupsRoute(context)}>Test Suites</BreadcrumbItem>
 		<BreadcrumbItem href={groupRoute(context, group)}>{group}</BreadcrumbItem>
-		<BreadcrumbItem href={testRoute(context, group, test)}>{test}</BreadcrumbItem>
-		<BreadcrumbItem href={$page.url.pathname}>{testExecutionId}</BreadcrumbItem>
+		<BreadcrumbItem href={testRoute(context, group, test.id)}>{test.name}</BreadcrumbItem>
+		<BreadcrumbItem href={$page.url.pathname}>{testExecution.id}</BreadcrumbItem>
 	</Breadcrumb>
 
+	<div>
+		<ExecutionStatusBadge status={overallStatus} />
+		<div class="mb-6 items-center sm:flex">
+			<div class="mb-4 w-full sm:mb-0">
+				<span class="text-3xl font-bold leading-none text-gray-900 dark:text-white sm:text-4xl">{test.name}</span>
+				<h3 class="text-base font-normal text-gray-500 dark:text-gray-400 mt-1">{testExecution.id}</h3>
+			</div>
+			<Button size="sm">Restart
+				<ChevronDownOutline class="w-6 h-6 ms-2 text-white dark:text-white" />
+			</Button>
+			<Dropdown class="w-60 p-3 space-y-1 text-sm">
+				{#each restartOptions as option }
+					<DropdownItem class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600" on:click={() => {
+						open = true
+						restartOption = option
+					}}>
+						{option.title}
+						<Helper>{option.helper}</Helper>
+					</DropdownItem>
+				{/each}
+			</Dropdown>
+		</div>
 
-	<div class="float-right mb-5">
-		<Button class="mr-2" size="sm" on:click={open_all}>Open all</Button>
-		<Button size="sm" on:click={close_all}>Close all</Button>
-	</div>
+		<Card size="xl" class="shadow-sm max-w-none max-h-[75vh] dark">
+			<Heading tag="h2" class="text-xl font-semibold text-gray-900 dark:text-white sm:text-2xl w-full pb-2">
+				Cases
+			</Heading>
 
-	<Accordion multiple>
-		{#each cases.keys() as caseID, i}
-			{@const caseView=cases.get(caseID)}
-			{#if caseView}
-				{@const execution=caseView.execution}
-				{@const status=getExecutionStatus(caseView.execution)}
-				<AccordionItem bind:open={items[i]} transitionParams="{{duration:30}}">
+			<Toolbar embedded class="w-full py-4 text-gray-500  dark:text-gray-400">
+				<Input placeholder="Search for case" class="me-4 w-80 border xl:w-96" />
+
+				<div slot="end" class="flex items-center space-x-2">
+					<ButtonGroup>
+						<Button outline={false} class="mr-2" size="xs" on:click={open_all}>Open all</Button>
+						<Button size="xs" on:click={close_all}>Close all</Button>
+					</ButtonGroup>
+
+
+				</div>
+			</Toolbar>
+
+			<Accordion multiple activeClass='focus:ring-2 dark:focus:ring-gray-700'>
+				{#each cases.keys() as caseID, i}
+					{@const caseView=cases.get(caseID)}
+					{#if caseView}
+						{@const execution=caseView.execution}
+						{@const status=getExecutionStatus(caseView.execution)}
+						<AccordionItem bind:open={items[i]} transitionParams="{{duration:30}}">
 					<span slot="header" class="text-base flex gap-2">
 						{#if status === ExecutionStatus.Scheduled}
 							<ClockSolid class="text-gray-600 dark:text-gray-400 inline m-1" ariaLabel="success" />
@@ -155,14 +249,19 @@
 							<Spinner class="m-1.5" color="gray" size={4} />
 						{:else if status === ExecutionStatus.Success}
 							<CheckCircleSolid class="text-green-600 dark:text-green-400 inline m-1" ariaLabel="success" />
-						{:else if status === ExecutionStatus.Error}
+						{:else if status === ExecutionStatus.Failed}
 							<CloseCircleSolid class="text-red-600 dark:text-red-400 inline m-1" ariaLabel="error" />
 						{/if}
 						<span>{execution.caseName}</span>
 					</span>
-					<CodeEditor value={caseLogsString(caseView)} readonly={true} editable={false} />
-				</AccordionItem>
-			{/if}
-		{/each}
-	</Accordion>
+							<CodeEditor value={caseLogsString(caseView)} readonly={true} editable={false} />
+						</AccordionItem>
+					{/if}
+				{/each}
+			</Accordion>
+		</Card>
+	</div>
 </main>
+
+<!-- Modals -->
+<RestartExecutionModal bind:open bind:restartOption />
