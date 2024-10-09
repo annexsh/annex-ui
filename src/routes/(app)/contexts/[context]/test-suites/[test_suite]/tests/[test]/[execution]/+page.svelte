@@ -26,7 +26,7 @@
 		RestartType
 	} from '$lib/models/execution';
 	import type { CaseExecution, Test, TestExecution } from '@annexsh/annex-proto/gen/annex/tests/v1/test_pb';
-	import { groupRoute, groupsRoute, testRoute } from '$lib/routes';
+	import { testRoute, testSuiteRoute, testSuitesRoute } from '$lib/routes';
 	import CodeEditor from '$lib/components/CodeEditor.svelte';
 	import { CheckCircleSolid, ChevronDownOutline, ClockSolid, CloseCircleSolid } from 'flowbite-svelte-icons';
 	import ExecutionStatusBadge from '$lib/components/ExecutionStatusBadge.svelte';
@@ -35,7 +35,7 @@
 	export let data;
 
 	const params = $page.params;
-	const group = params.group;
+	const testSuiteId = params.test_suite;
 	const context = params.context;
 	const test = data.test as Test;
 	const testExecution = data.testExecution as TestExecution;
@@ -188,9 +188,9 @@
 <main class="p-4 bg-gray-50 dark:bg-gray-900">
 	<Breadcrumb class="mb-5">
 		<BreadcrumbItem href="/" home>Home</BreadcrumbItem>
-		<BreadcrumbItem href={groupsRoute(context)}>Test Suites</BreadcrumbItem>
-		<BreadcrumbItem href={groupRoute(context, group)}>{group}</BreadcrumbItem>
-		<BreadcrumbItem href={testRoute(context, group, test.id)}>{test.name}</BreadcrumbItem>
+		<BreadcrumbItem href={testSuitesRoute(context)}>Test Suites</BreadcrumbItem>
+		<BreadcrumbItem href={testSuiteRoute(context, testSuiteId)}>{testSuiteId}</BreadcrumbItem>
+		<BreadcrumbItem href={testRoute(context, testSuiteId, test.id)}>{test.name}</BreadcrumbItem>
 		<BreadcrumbItem href={$page.url.pathname}>{testExecution.id}</BreadcrumbItem>
 	</Breadcrumb>
 

@@ -3,7 +3,7 @@
 	import { page } from '$app/stores';
 	import { Sidebar, SidebarGroup, SidebarItem, SidebarWrapper } from 'flowbite-svelte';
 	import { LayersSolid, RectangleListSolid } from 'flowbite-svelte-icons';
-	import { groupsRoute } from '$lib/routes';
+	import { testSuitesRoute } from '$lib/routes';
 	import { activeContext } from '$lib/stores/contexts';
 
 	export let drawerHidden: boolean = false;
@@ -42,7 +42,7 @@
 	>
 		<nav class="divide-y divide-gray-200 dark:divide-gray-700">
 			<SidebarGroup ulClass={groupClass} class="mt-4 mb-3">
-				<SidebarItem label={"Test Suites"} href={groupsRoute($activeContext)} spanClass="ml-3" class={itemClass}
+				<SidebarItem label={"Test Suites"} href={testSuitesRoute($activeContext)} spanClass="ml-3" class={itemClass}
 										 active={activeMainSidebar === "/"}>
 					<svelte:component this={LayersSolid} slot="icon" class={iconClass} />
 				</SidebarItem>
