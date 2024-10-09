@@ -3,20 +3,20 @@
 	import { Test } from '@annexsh/annex-proto/gen/annex/tests/v1/test_pb.js';
 	import { page } from '$app/stores';
 	import { Breadcrumb, BreadcrumbItem } from 'flowbite-svelte';
-	import { groupsRoute } from '$lib/routes';
+	import { testSuitesRoute } from '$lib/routes';
 
 	export let data;
 
 	const context = $page.params.context;
-	const groupName = $page.params.group;
+	const testSuiteId = $page.params.test_suite;
 	const tests = data.tests;
 </script>
 
 <main class="p-4 bg-gray-50 dark:bg-gray-900">
 	<Breadcrumb class="mb-5">
 		<BreadcrumbItem href="/" home>Home</BreadcrumbItem>
-		<BreadcrumbItem href={groupsRoute(context)}>Test Suites</BreadcrumbItem>
-		<BreadcrumbItem href={$page.url.pathname}>{groupName}</BreadcrumbItem>
+		<BreadcrumbItem href={testSuitesRoute(context)}>Test Suites</BreadcrumbItem>
+		<BreadcrumbItem href={$page.url.pathname}>{testSuiteId}</BreadcrumbItem>
 	</Breadcrumb>
 
 	<div class="mt-px space-y-4">

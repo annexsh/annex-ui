@@ -16,7 +16,7 @@
 			</Heading>
 		</div>
 		<div class="-mt-1">
-			<More title="View" href={testRoute(test.context, test.group, test.id)} />
+			<More title="View" href={testRoute(test.context, test.testSuiteId, test.id)} />
 		</div>
 	</div>
 </Card>

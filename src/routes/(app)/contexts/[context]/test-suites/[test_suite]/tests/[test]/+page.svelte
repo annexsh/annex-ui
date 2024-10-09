@@ -1,21 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import { groupRoute, groupsRoute } from '$lib/routes';
+	import { testSuiteRoute, testSuitesRoute } from '$lib/routes';
 	import { TestExecution } from '@annexsh/annex-proto/gen/annex/tests/v1/test_pb';
-	import {
-		Breadcrumb,
-		BreadcrumbItem,
-		Button,
-		Card,
-		Heading,
-		Input,
-		Table,
-		TableBody,
-		TableBodyCell,
-		TableBodyRow,
-		TableHead, TableHeadCell,
-		Toolbar
-	} from 'flowbite-svelte';
+	import { Breadcrumb, BreadcrumbItem, Button, Card, Heading, Input, Toolbar } from 'flowbite-svelte';
 	import ExecutionsTable from '$lib/components/ExecutionsTable.svelte';
 	import NewExecutionModal from '$lib/components/NewExecutionModal.svelte';
 	import { PlusOutline } from 'flowbite-svelte-icons';
@@ -25,7 +12,7 @@
 
 	const params = $page.params;
 	const context = params.context;
-	const group = params.group;
+	const testSuiteId = params.test_suite;
 	const test = data.test as Test;
 	const executions = data.testExecutions as TestExecution[];
 
@@ -35,8 +22,8 @@
 <main class="p-4 bg-gray-50 dark:bg-gray-900">
 	<Breadcrumb class="mb-5">
 		<BreadcrumbItem href="/" home>Home</BreadcrumbItem>
-		<BreadcrumbItem href={groupsRoute(context)}>Test Suites</BreadcrumbItem>
-		<BreadcrumbItem href={groupRoute(context, group)}>{group}</BreadcrumbItem>
+		<BreadcrumbItem href={testSuitesRoute(context)}>Test Suites</BreadcrumbItem>
+		<BreadcrumbItem href={testSuiteRoute(context, testSuiteId)}>{testSuiteId}</BreadcrumbItem>
 		<BreadcrumbItem href={$page.url.pathname}>{test.name}</BreadcrumbItem>
 	</Breadcrumb>
 
@@ -61,7 +48,7 @@
 				</div>
 			</Toolbar>
 
-			<ExecutionsTable context={context} group={group} executions="{executions}" />
+			<ExecutionsTable context={context} testSuiteId={testSuiteId} executions={executions} />
 		</Card>
 	</div>
 </main>

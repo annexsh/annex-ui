@@ -11,12 +11,12 @@
 	} from 'flowbite-svelte';
 	import More from '$lib/components/widgets/More.svelte';
 	import { Timestamp } from '@bufbuild/protobuf';
-	import type { Group } from '@annexsh/annex-proto/gen/annex/tests/v1/test_pb.js';
-	import { groupRoute } from '$lib/routes';
+	import type { TestSuite } from '@annexsh/annex-proto/gen/annex/tests/v1/test_pb.js';
+	import { testSuiteRoute } from '$lib/routes';
 
-	export let group: Group;
+	export let testSuite: TestSuite;
 
-	let runners = group.runners;
+	let runners = testSuite.runners;
 	let moreRunnersCount = 0;
 
 	if (runners.length > 3) {
@@ -29,14 +29,14 @@
 	<div class="items-center justify-between lg:flex">
 		<div class="mb-4 mt-px lg:mb-0">
 			<Heading tag="h3" class="-ml-0.25 mb-2 text-xl font-semibold dark:text-white">
-				{group.name}
+				{testSuite.name}
 			</Heading>
 			<span class="text-base font-normal text-gray-500 dark:text-gray-400">
 				Test Runners
 			</span>
 		</div>
 		<div class="-mt-8">
-			<More title="View" href={groupRoute(group.context, group.name)} />
+			<More title="View" href={testSuiteRoute(testSuite.context, testSuite.id)} />
 		</div>
 	</div>
 	<Table
@@ -50,7 +50,7 @@
 			{/each}
 		</TableHead>
 		<TableBody>
-			{#each group.runners as runner}
+			{#each testSuite.runners as runner}
 				<TableBodyRow>
 					<TableBodyCell class="px-2 font-normal text-gray-500 dark:text-gray-400">{runner.id.substring(0, 12)}</TableBodyCell>
 					<TableBodyCell class="px-2 font-normal text-gray-500 dark:text-gray-400">
