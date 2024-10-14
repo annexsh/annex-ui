@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
-	import { Event, Event_Type, StreamTestExecutionEventsResponse } from '@annexsh/annex-proto';
+	import { Event, Event_Type } from '@annexsh/annex-proto';
 	import {
 		Accordion,
 		AccordionItem,
@@ -31,14 +31,20 @@
 	import { CheckCircleSolid, ChevronDownOutline, ClockSolid, CloseCircleSolid } from 'flowbite-svelte-icons';
 	import ExecutionStatusBadge from '$lib/components/ExecutionStatusBadge.svelte';
 	import RestartExecutionModal from '$lib/components/RestartExecutionModal.svelte';
+	import { newEventClient, newTestClient } from '$lib/clients';
+	import { toPlainMessage } from '@bufbuild/protobuf';
+	import type {
+		GetTestExecutionResponse,
+		GetTestResponse
+	} from '@annexsh/annex-proto/gen/annex/tests/v1/test_service_pb';
 
 	export let data;
 
 	const params = $page.params;
 	const testSuiteId = params.test_suite;
 	const context = params.context;
-	const test = data.test as Test;
-	const testExecution = data.testExecution as TestExecution;
+	let test = data.test as Test;
+	let testExecution = data.testExecution as TestExecution;
 
 	let events: Event[] = [];
 	let cases = new Map<number, CaseExecutionView>();
@@ -46,24 +52,59 @@
 	let restartOption: RestartOption;
 	let overallStatus = getExecutionStatus(testExecution);
 
+	const defaultRestartOptions = new Map<RestartType, RestartOption>(
+		[
+			[RestartType.AsNew, {
+				type: RestartType.AsNew,
+				title: 'As new',
+				helper: 'Execute without prior history'
+			}]
+		]
+	);
+
+	let restartOptions = defaultRestartOptions;
+
 	const items = Array(cases.size);
 	const open_all = () => items.forEach((_, i) => (items[i] = true));
 	const close_all = () => items.forEach((_, i) => (items[i] = false));
 
-	const restartOptions: RestartOption[] = [
-		{
-			type: RestartType.AsNew,
-			title: 'As new',
-			helper: 'Execute without prior history'
-		}
-	];
+	let abortController = new AbortController();
+
+	onMount(() => {
+		reset();
+		streamCases();
+	});
 
 	$:if (overallStatus == ExecutionStatus.Failed) {
-		restartOptions.push({
+		restartOptions.set(RestartType.FromFailure, {
 			type: RestartType.FromFailure,
 			title: 'From failure',
 			helper: 'Retry from first recorded failure'
 		});
+	}
+
+	async function reset() {
+		restartOptions = defaultRestartOptions;
+		abortController = new AbortController();
+		events = [];
+		cases = new Map<number, CaseExecutionView>();
+		open = false;
+
+		const testClient = newTestClient(fetch);
+
+		const testRes = await testClient.getTest({
+			context: params.context,
+			testId: params.test
+		});
+
+		const testExecRes = await testClient.getTestExecution({
+			context: params.context,
+			testExecutionId: params.execution
+		});
+
+		test = toPlainMessage<GetTestResponse>(testRes).test as Test;
+		testExecution = toPlainMessage<GetTestExecutionResponse>(testExecRes).testExecution as TestExecution;
+		overallStatus = getExecutionStatus(testExecution);
 	}
 
 	function updateOverallStatus(status: ExecutionStatus) {
@@ -71,52 +112,31 @@
 		overallStatus = isFinished ? overallStatus : status;
 	}
 
-	onMount(subscribe);
+	async function streamCases() {
+		const eventClient = newEventClient(fetch);
 
-	async function subscribe() {
-		updateOverallStatus(ExecutionStatus.Scheduled);
+		const stream = eventClient.streamTestExecutionEvents({
+			context: context,
+			testExecutionId: testExecution.id
+		}, { signal: abortController.signal });
 
 		try {
-			const eventsURL = `${$page.url}?context=${context}&testExecutionId=${testExecution.id}`;
-			const response = await fetch(eventsURL);
-			if (!response || !response.body) {
-				console.error('stream response empty');
-				return;
-			}
-
-			const reader = response.body.getReader();
-			const decoder = new TextDecoder();
-			let buffer = '';
-
-			while (true) {
-				const { done, value } = await reader.read();
-				if (done) break;
-
-				buffer += decoder.decode(value, { stream: true });
-
-				let boundary = buffer.indexOf('\n');
-				while (boundary !== -1) {
-					const chunk = buffer.slice(0, boundary).trim();
-					if (chunk) {
-						const message = new StreamTestExecutionEventsResponse().fromJson(JSON.parse(chunk));
-						if (!message.event) {
-							console.error('stream event is empty');
-							return;
-						}
-						handleEvent(message.event);
-					}
-					buffer = buffer.slice(boundary + 1);
-					boundary = buffer.indexOf('\n');
-				}
-			}
-
-			if (buffer.trim()) {
-				const message = JSON.parse(buffer.trim());
-				handleEvent(message.event);
+			for await (const res of stream) {
+				handleEvent(res.event!);
 			}
 		} catch (e) {
-			console.error('Failed to stream: ' + e);
+			if (abortController.signal.aborted) {
+				console.log('Stream aborted');
+			} else {
+				console.error('Stream error: ', e);
+			}
 		}
+	}
+
+	async function restart() {
+		abortController.abort('restart');
+		await reset();
+		streamCases();
 	}
 
 	function handleEvent(event: Event) {
@@ -205,7 +225,7 @@
 				<ChevronDownOutline class="w-6 h-6 ms-2 text-white dark:text-white" />
 			</Button>
 			<Dropdown class="w-60 p-3 space-y-1 text-sm">
-				{#each restartOptions as option }
+				{#each restartOptions as [type, option] }
 					<DropdownItem class="rounded p-2 hover:bg-gray-100 dark:hover:bg-gray-600" on:click={() => {
 						open = true
 						restartOption = option
@@ -264,4 +284,10 @@
 </main>
 
 <!-- Modals -->
-<RestartExecutionModal bind:open bind:restartOption />
+<RestartExecutionModal
+	context={context}
+	testExecutionId={testExecution.id}
+	bind:open
+	bind:restartOption
+	on:restart={restart}
+/>

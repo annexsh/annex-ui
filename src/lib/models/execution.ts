@@ -1,6 +1,5 @@
 import { CaseExecution, Log, TestExecution } from '@annexsh/annex-proto/gen/annex/tests/v1/test_pb';
 import type { ColorVariant } from 'flowbite-svelte';
-import type { Pair } from '$lib/models/base';
 
 export type CaseExecutionView = {
 	execution: CaseExecution

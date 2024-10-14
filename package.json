@@ -57,6 +57,7 @@
 		"@connectrpc/connect": "^1.4.0",
 		"@connectrpc/connect-web": "^1.4.0",
 		"@lezer/highlight": "^1.2.0",
+		"@sveltejs/adapter-static": "^3.0.5",
 		"codemirror": "^6.0.1",
 		"svelte-codemirror-editor": "^1.4.0",
 		"thememirror": "^2.0.1"

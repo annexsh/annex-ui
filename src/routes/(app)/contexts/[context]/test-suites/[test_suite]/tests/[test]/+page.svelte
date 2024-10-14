@@ -7,6 +7,8 @@
 	import NewExecutionModal from '$lib/components/NewExecutionModal.svelte';
 	import { PlusOutline } from 'flowbite-svelte-icons';
 	import type { Test } from '@annexsh/annex-proto/gen/annex/tests/v1/test_pb.js';
+	import { loadTestExecutions } from '$lib/stores/test-executions';
+	import { newTestClient } from '$lib/clients';
 
 	export let data;
 
@@ -14,9 +16,10 @@
 	const context = params.context;
 	const testSuiteId = params.test_suite;
 	const test = data.test as Test;
-	const executions = data.testExecutions as TestExecution[];
 
 	let open = false;
+
+	loadTestExecutions(newTestClient(fetch), context, test.id);
 </script>
 
 <main class="p-4 bg-gray-50 dark:bg-gray-900">
@@ -48,10 +51,10 @@
 				</div>
 			</Toolbar>
 
-			<ExecutionsTable context={context} testSuiteId={testSuiteId} executions={executions} />
+			<ExecutionsTable context={context} testSuiteId={testSuiteId} />
 		</Card>
 	</div>
 </main>
 
 <!-- Modals -->
-<NewExecutionModal bind:open defaultInput={data.defaultInput} />
+<NewExecutionModal bind:open context={context} testId={test.id} defaultInput={data.defaultInput} />
