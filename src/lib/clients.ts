@@ -16,7 +16,7 @@ function newPromiseClient<T extends ServiceType>(service: T, fetch: (input: Requ
 }
 export function newConnectTransport(fetch?: (input: RequestInfo | URL, init?: RequestInit | undefined) => Promise<Response>) {
 	return createConnectTransport({
-		baseUrl: 'http://localhost:50051/connect', // TODO: load from config
+		baseUrl: 'http://localhost:4400/connect', // TODO: load from config
 		fetch
 	});
 }

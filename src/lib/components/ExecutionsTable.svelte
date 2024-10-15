@@ -1,15 +1,15 @@
 <script lang="ts">
 	import { Table, TableBody, TableBodyCell, TableBodyRow, TableHead, TableHeadCell } from 'flowbite-svelte';
-	import type { TestExecution } from '@annexsh/annex-proto/gen/annex/tests/v1/test_pb';
 	import { getExecutionStatus } from '$lib/models/execution';
 	import { type PartialMessage, Timestamp } from '@bufbuild/protobuf';
 	import More from '$lib/components/widgets/More.svelte';
 	import { testExecutionRoute } from '$lib/routes';
 	import ExecutionStatusBadge from '$lib/components/ExecutionStatusBadge.svelte';
+	import { testExecutions } from '$lib/stores/test-executions';
+	import { TestExecution } from '@annexsh/annex-proto/gen/annex/tests/v1/test_pb';
 
 	export let context: string;
 	export let testSuiteId: string;
-	export let executions: TestExecution[];
 
 	function dateFromPartialTS(ts: PartialMessage<Timestamp> | undefined): string {
 		if (!ts) {
@@ -26,8 +26,8 @@
 		{/each}
 	</TableHead>
 	<TableBody>
-		{#each executions as execution}
-			{@const status=getExecutionStatus(execution)}
+		{#each $testExecutions as execution}
+			{@const status=getExecutionStatus(new TestExecution(execution))}
 			<TableBodyRow class="text-base">
 				<TableBodyCell class="p-4">{execution.id}</TableBodyCell>
 				{#each [execution.scheduleTime, execution.startTime, execution.finishTime] as ts}
