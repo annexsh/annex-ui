@@ -1,5 +1,7 @@
 import adapter from '@sveltejs/adapter-static';
-import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
+import { vitePreprocess } from '@sveltejs/vite-plugin-svelte'
+
+const buildPath = process.env.BUILD_PATH || 'dist';
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
@@ -9,8 +11,8 @@ const config = {
 
 	kit: {
 		adapter: adapter({
-			pages: 'build',
-			assets: 'build',
+			pages: buildPath,
+			assets: buildPath,
 			fallback: 'index.html',
 		})
 	}

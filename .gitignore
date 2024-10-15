@@ -2,6 +2,8 @@
 /.vscode/
 .DS_Store
 /.svelte-kit
+build/
+dist/
 
 # exclude local env files
 .env.local
