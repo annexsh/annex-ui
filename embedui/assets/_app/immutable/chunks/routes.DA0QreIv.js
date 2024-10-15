@@ -1,0 +1,1 @@
+import{b as n}from"./entry.DWTA6NHf.js";const u=`${n}/contexts`,r=t=>`${u}/${t}`,c=t=>`${r(t)}/test-suites`,$=(t,e)=>`${c(t)}/${e}`,a=(t,e,s)=>`${$(t,e)}/tests/${s}`,i=(t,e,s,o)=>`${a(t,e,s)}/${o}`;export{r as a,$ as b,u as c,a as d,i as e,c as t};
