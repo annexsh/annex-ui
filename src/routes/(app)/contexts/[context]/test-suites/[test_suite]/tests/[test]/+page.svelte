@@ -51,7 +51,7 @@
 				</div>
 			</Toolbar>
 
-			<ExecutionsTable context={context} testSuiteId={testSuiteId} />
+			<ExecutionsTable bind:open context={context} testSuiteId={testSuiteId} />
 		</Card>
 	</div>
 </main>

@@ -4,6 +4,7 @@
 	import { page } from '$app/stores';
 	import { Breadcrumb, BreadcrumbItem } from 'flowbite-svelte';
 	import { testSuitesRoute } from '$lib/routes';
+	import ItemsNotFoundMessage from '$lib/components/ItemsNotFoundMessage.svelte';
 
 	export let data;
 
@@ -20,11 +21,16 @@
 	</Breadcrumb>
 
 	<div class="mt-px space-y-4">
-		<div class="grid grid-cols-1 gap-4 xl:grid-cols-4">
-			{#each tests as test}
-				<TestCard test="{new Test(test)}" />
-			{/each}
-		</div>
+		{#if !tests.length}
+			<ItemsNotFoundMessage title="No Tests found"
+														message="Get started by registering a Test using one of the supported SDKs." />
+		{:else }
+			<div class="grid grid-cols-1 gap-4 xl:grid-cols-4">
+				{#each tests as test}
+					<TestCard test="{new Test(test)}" />
+				{/each}
+			</div>
+		{/if}
 	</div>
 </main>
 
